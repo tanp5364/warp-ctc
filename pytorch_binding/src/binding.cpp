@@ -89,7 +89,7 @@ extern "C" int gpu_ctc(THCudaTensor *probs,
     int *label_sizes_ptr = THIntTensor_data(label_sizes);
     float *costs_ptr = THFloatTensor_data(costs);
 
-    int probs_size = THFloatTensor_size(probs, 2);
+    int probs_size = THCudaTensor_size(state, probs, 2);
 
     ctcOptions options;
     memset(&options, 0, sizeof(options));
@@ -102,7 +102,9 @@ extern "C" int gpu_ctc(THCudaTensor *probs,
                        probs_size, minibatch_size,
                        options, &gpu_size_bytes);
 
-    void* gpu_workspace = THCudaMalloc(state, gpu_size_bytes);
+    void* gpu_workspace;
+    THCudaMalloc(state, &gpu_workspace, gpu_size_bytes);
+
 
     compute_ctc_loss(probs_ptr, grads_ptr,
                      labels_ptr, label_sizes_ptr,
